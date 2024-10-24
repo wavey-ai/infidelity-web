@@ -1,0 +1,45 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H infidelity.io >> ~/.ssh/known_hosts
+      shell: bash
+
+    - name: Create .env file from secret
+      run: echo "${{ secrets.SECRET_ENV }}" > .env
+      shell: bash
+
+    - name: Build
+      run: cargo build --release
+
+    - name: Run discovery and publish
+      run: |
+        scp ./target/release/infidelity-web root@infidelity.io:/var/opt/infidelity-web-latest || exit 1
+        scp ./config/infidelity-web.service root@infidelity.io:/etc/systemd/system/ || exit 1
+        mv public infidelity-public
+        scp -R infidelity-public root@infidelity.io:/var/opt/ || exit 1
+        ssh root@infidelity.io "systemctl daemon-reload && systemctl stop infidelity-web && mv /var/opt/infidelity-web-latest /var/opt/infidelity-web && systemctl enable infidelity-web && systemctl restart infidelity-web" || exit 1
+        echo "Deployment complete."
+      shell: bash
+

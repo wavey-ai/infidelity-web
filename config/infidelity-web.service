@@ -1,0 +1,14 @@
+    [Unit]
+    Description=infidelity-web
+    After=network.target
+
+    [Service]
+    ExecStart=/var/opt/infidelity-web
+    Restart=always
+    User=root
+    StandardOutput=syslog
+    StandardError=syslog
+    SyslogIdentifier=io
+
+    [Install]
+    WantedBy=multi-user.target
