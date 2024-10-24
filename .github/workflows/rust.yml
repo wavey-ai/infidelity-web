@@ -37,7 +37,7 @@ jobs:
       run: |
         scp ./target/release/infidelity-web root@infidelity.io:/var/opt/infidelity-web-latest || exit 1
         scp ./config/infidelity-web.service root@infidelity.io:/etc/systemd/system/ || exit 1
-        scp -r public root@infidelity.io:/var/opt/infidelity-public || exit 1
+        scp -r public/ root@infidelity.io:/var/opt/infidelity-public || exit 1
         ssh root@infidelity.io "systemctl daemon-reload && systemctl stop infidelity-web && mv /var/opt/infidelity-web-latest /var/opt/infidelity-web && systemctl enable infidelity-web && systemctl restart infidelity-web" || exit 1
         echo "Deployment complete."
       shell: bash
