@@ -36,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let privkey_pem = args.privkey_pem;
     let fullchain_pem = args.fullchain_pem;
 
-    let path = PathBuf::from("./public");
+    let path = PathBuf::from("/var/opt/infidelity-public");
 
     let server = HyperStatic::new(fullchain_pem.clone(), privkey_pem.clone(), ssl_port, path);
 
