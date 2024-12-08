@@ -7,15 +7,67 @@
     body, html {
       margin: 0;
       padding: 0;
-      overflow: hidden; /* Prevent scrollbars */
-      background-color: black; /* Dark background */
+      overflow: hidden; 
+      background-color: black; 
+      font-family: Arial, sans-serif;
     }
+
+    #session-container {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.6); /* Subtle dark opacity */
+      padding: 20px 0;
+      text-align: center;
+    }
+
+    #session-content {
+      display: inline-block;
+    }
+
+    #session-container input[type="text"] {
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 4px;
+      padding: 10px;
+      color: white;
+      font-size: 16px;
+      outline: none;
+      margin-right: 10px;
+    }
+
+    #session-container input[type="text"]::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    #session-container button {
+      background-color: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 4px;
+      padding: 10px 20px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #session-container button:hover {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+
     canvas {
       display: block;
     }
   </style>
 </head>
 <body>
+
+<div id="session-container">
+  <div id="session-content">
+    <input type="text" id="session-key" placeholder="Session Key">
+    <button id="submit-button">Submit</button>
+  </div>
+</div>
 
 <canvas id="bgCanvas"></canvas>
 
@@ -38,7 +90,6 @@
     imagePaths.push(`/img/infidelity${i}.avif`);
   }
 
-  // Fisher-Yates Shuffle Algorithm to randomize the images array
   function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -46,7 +97,7 @@
     }
   }
 
-  shuffleArray(imagePaths); // Shuffle the image paths array
+  shuffleArray(imagePaths);
 
   let currentImageIndex = 0;
   let nextImageIndex = (currentImageIndex + 1) % totalImages;
@@ -54,19 +105,15 @@
   let transitioning = false;
   const images = [];
 
-  // Function to preload an image asynchronously
   function preloadImage(path, callback) {
     const img = new Image();
     img.src = path;
-    img.onload = () => {
-      callback(img);
-    };
+    img.onload = () => callback(img);
   }
 
-  // Preload only the first image to start the animation
   preloadImage(imagePaths[currentImageIndex], (img) => {
     images[currentImageIndex] = img;
-    startAnimation(); // Start animation after the first image is loaded
+    startAnimation();
   });
 
   const staticCanvas = document.createElement('canvas');
@@ -92,7 +139,7 @@
 
   function updateStaticOverlay() {
     const totalPixels = buffer32.length;
-    const pixelsToUpdate = Math.floor(totalPixels * 0.2); // 20% of total pixels
+    const pixelsToUpdate = Math.floor(totalPixels * 0.2);
 
     for (let i = 0; i < pixelsToUpdate; i++) {
       const index = Math.floor(Math.random() * totalPixels);
@@ -119,42 +166,19 @@
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Check if the current and next images are loaded before drawing
     if (currentImage && currentImage.complete) {
       const imgWidthCurrent = currentImage.width * (imgHeight / currentImage.height);
 
       if (transitioning && nextImage && nextImage.complete) {
         const imgWidthNext = nextImage.width * (imgHeight / nextImage.height);
 
-        // Draw current image fading out
         ctx.globalAlpha = 1 - transitionProgress;
-        ctx.drawImage(
-          currentImage,
-          0,
-          0,
-          currentImage.width,
-          currentImage.height,
-          (canvas.width - imgWidthCurrent) / 2,
-          0,
-          imgWidthCurrent,
-          imgHeight
-        );
+        ctx.drawImage(currentImage, 0, 0, currentImage.width, currentImage.height, (canvas.width - imgWidthCurrent) / 2, 0, imgWidthCurrent, imgHeight);
 
-        // Draw next image fading in
         ctx.globalAlpha = transitionProgress;
-        ctx.drawImage(
-          nextImage,
-          0,
-          0,
-          nextImage.width,
-          nextImage.height,
-          (canvas.width - imgWidthNext) / 2,
-          0,
-          imgWidthNext,
-          imgHeight
-        );
+        ctx.drawImage(nextImage, 0, 0, nextImage.width, nextImage.height, (canvas.width - imgWidthNext) / 2, 0, imgWidthNext, imgHeight);
 
-        ctx.globalAlpha = 1; // Reset alpha
+        ctx.globalAlpha = 1;
 
         const staticOpacity = 1 - transitionProgress;
         ctx.globalAlpha = staticOpacity;
@@ -164,34 +188,13 @@
 
         updateStaticOverlay();
 
-        ctx.drawImage(
-          staticCanvas,
-          0,
-          0,
-          staticCanvas.width,
-          staticCanvas.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
+        ctx.drawImage(staticCanvas, 0, 0, staticCanvas.width, staticCanvas.height, 0, 0, canvas.width, canvas.height);
 
         ctx.globalCompositeOperation = prevCompositeOperation;
         ctx.globalAlpha = 1;
       } else {
-        // Draw the current image at full opacity
         ctx.globalAlpha = 1;
-        ctx.drawImage(
-          currentImage,
-          0,
-          0,
-          currentImage.width,
-          currentImage.height,
-          (canvas.width - imgWidthCurrent) / 2,
-          0,
-          imgWidthCurrent,
-          imgHeight
-        );
+        ctx.drawImage(currentImage, 0, 0, currentImage.width, currentImage.height, (canvas.width - imgWidthCurrent) / 2, 0, imgWidthCurrent, imgHeight);
       }
     }
   }
@@ -218,7 +221,6 @@
 
       nextImageIndex = (currentImageIndex + 1) % totalImages;
 
-      // Preload the next image asynchronously
       preloadImage(imagePaths[nextImageIndex], (img) => {
         images[nextImageIndex] = img;
         createStaticOverlay();
